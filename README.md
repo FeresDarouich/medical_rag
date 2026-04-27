@@ -32,7 +32,3 @@ Endpoints:
 
 - `GET /health`
 - `POST /ask` with JSON `{ "question": "...", "top_k": 5 }`
-
-## Notes
-
-This template uses a lightweight deterministic embedder (`SimpleHashEmbedding`) so the wiring and tests run without external services. Replace it with a real embedding model and LLM in `app/services/embedding.py` and `app/rag/generator.py`.
