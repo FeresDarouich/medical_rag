@@ -95,9 +95,20 @@ class VectorStore:
             )
         return results
 
-    def save(self, path: str | Path) -> None:
-        path = Path(path)
-        path.parent.mkdir(parents=True, exist_ok=True)
+    def save(self, directory: str | Path) -> None:
+        """
+        save metadata + FAISS index
+        output:
+            directory/
+                chunks.json
+                vectors.index
+        """
+        directory = Path(directory)
+        directory.mkdir(parents=True, exist_ok=True)
+
+        chunks_file = directory / "chunks.json"
+        index_file = directory / "vectors.index"
+
         payload = [
             {
                 "chunk_id": c.chunk_id,
@@ -107,7 +118,19 @@ class VectorStore:
             }
             for c in self._chunks
         ]
-        path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+        chunks_file.write_text(
+            json.dumps(
+                payload,
+                ensure_ascii=False,
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
+        if self._index is not None:
+            faiss.write_index(
+                self._index,
+                str(index_file),
+            )
 
     @classmethod
     def load(cls, path: str | Path) -> "VectorStore":
