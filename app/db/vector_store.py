@@ -133,19 +133,37 @@ class VectorStore:
             )
 
     @classmethod
-    def load(cls, path: str | Path) -> "VectorStore":
-        path = Path(path)
+    def load(
+        cls,
+        directory: str | Path,
+    )-> "VectorStore":
+        """
+        load VectorStore from disk.
+        """
+        directory = Path(directory)
+
+        chunks_file = directory / "chunks.json"
+        index_file = directory / "vectors.index"
+
         store = cls()
-        if not path.exists():
+
+        if not chunks_file.exists():
             return store
-        raw = json.loads(path.read_text(encoding="utf-8"))
-        for item in raw:
-            store.add(
-                StoredChunk(
-                    chunk_id=str(item["chunk_id"]),
-                    text=str(item["text"]),
-                    metadata=dict(item.get("metadata") or {}),
-                    embedding=[float(x) for x in item["embedding"]],
-                )
+        
+        raw = json.loads(
+            chunks_file.read_text(
+                encoding="utf-8"
             )
+        )
+        store._chunks = [
+
+        ]
+        if store._chunks:
+            store._dimension = len(store._chunks[0].embedding)
+        if index_file.exists():
+            store._index = faiss.read_index(
+                str(index_file)
+            )
+        else:
+            store.rebuild_index()
         return store
