@@ -5,18 +5,8 @@ import math
 from dataclasses import dataclass
 from pathlib import Path
 
-
-def _cosine_similarity(a: list[float], b: list[float]) -> float:
-    dot = 0.0
-    norm_a = 0.0
-    norm_b = 0.0
-    for av, bv in zip(a, b, strict=False):
-        dot += av * bv
-        norm_a += av * av
-        norm_b += bv * bv
-    if norm_a <= 0.0 or norm_b <= 0.0:
-        return 0.0
-    return dot / (math.sqrt(norm_a) * math.sqrt(norm_b))
+import faiss
+import numpy as np
 
 
 @dataclass(frozen=True)
@@ -30,9 +20,29 @@ class StoredChunk:
 class VectorStore:
     def __init__(self) -> None:
         self._chunks: list[StoredChunk] = []
+        self._index: faiss.Index | None = None
+        self._dimension: int | None = None
 
     def add(self, chunk: StoredChunk) -> None:
+        """
+        Add a single chunk
+        """
+        if self._dimension is None:
+            self._dimension = len(chunk.embedding)
+        elif len(chunk.embedding) != self._dimension:
+            raise ValueError(
+                f"Embedding dimention mismatch."
+                f"Expected {self._dimension}, got {len(chunk.embedding)}"
+            )
         self._chunks.append(chunk)
+        embedding = np.array(
+            [chunk.embedding],
+            dtype= np.float32,
+        )
+        faiss.normalize_L2(embedding) # normalizing
+        if self._index is None:
+            self._index = faiss.IndexFlatIP(self._dimension)
+        self._index.add(embedding)
 
     def search(self, query_embedding: list[float], *, k: int = 5) -> list[tuple[StoredChunk, float]]:
         scored: list[tuple[StoredChunk, float]] = []
