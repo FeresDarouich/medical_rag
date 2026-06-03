@@ -44,6 +44,28 @@ class VectorStore:
             self._index = faiss.IndexFlatIP(self._dimension)
         self._index.add(embedding)
 
+    def add_many(self, chunks: list[StoredChunk]) -> None:
+        """
+        add many chunks efficiently.
+        """
+        if not chunks:
+            return
+        if self._dimension is None:
+            self._dimension = len(chunks[0].embedding)
+        for chunk in chunks:
+            if len(chunk.embedding) != self._dimension:
+                raise ValueError(
+                    f"Embedding dimension mismatch. "
+                    f"Expected {self._dimension}, got {len(chunk.embedding)}."
+                )
+        self._chunks.extend(chunks)
+
+        embeddings = np.array([c.embedding for c in chunks], dtype=np.float32)
+        faiss.normalize_L2(embeddings)
+        if self._index is None:
+            self._index = faiss.IndexFlatIP(self._dimension)
+        self._index.add(embeddings)
+
     def search(self, query_embedding: list[float], *, k: int = 5) -> list[tuple[StoredChunk, float]]:
         scored: list[tuple[StoredChunk, float]] = []
         for chunk in self._chunks:
