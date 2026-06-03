@@ -67,12 +67,33 @@ class VectorStore:
         self._index.add(embeddings)
 
     def search(self, query_embedding: list[float], *, k: int = 5) -> list[tuple[StoredChunk, float]]:
-        scored: list[tuple[StoredChunk, float]] = []
-        for chunk in self._chunks:
-            score = _cosine_similarity(query_embedding, chunk.embedding)
-            scored.append((chunk, score))
-        scored.sort(key=lambda x: x[1], reverse=True)
-        return scored[:k]
+        if self._index is None:
+            return []
+        if len(query_embedding) != self._dimension:
+            raise ValueError(
+                f"Query embedding dimension mismatch. "
+                f"Expected {self._dimension}, got {len(query_embedding)}."
+            )
+        query = np.array(
+            [query_embedding],
+            dtype=np.float32,
+        )
+        faiss.normalize_L2(query)
+        scores, indices = self._index.search(
+            query,
+            min(k, len(self._chunks)),
+        )
+        results: list[tuple[StoredChunk, float]] = []
+        for idx, score in zip(indices[0], scores[0], strict=False):
+            if idx < 0:
+                continue
+            results.append(
+                (
+                    self._chunks[int(idx)],
+                    float(score),
+                )
+            )
+        return results
 
     def save(self, path: str | Path) -> None:
         path = Path(path)
