@@ -167,3 +167,24 @@ class VectorStore:
         else:
             store.rebuild_index()
         return store
+
+    def rebuild_index(self)-> None:
+        """
+        Rebuild FAISS index from stored chunks.
+        Useful after manual modifications.
+        """
+        if not self._chunks:
+            self._index = None
+            return
+        embeddings = np.array(
+            [c.embedding for c in self._chunks],
+            dtype = np.float32,
+        )
+        faiss.normalize_L2(embeddings)
+        self._dimension = embeddings.shape[1]
+
+        index = faiss.IndexFlatIP(
+            self._dimension
+        )
+        index.add(embeddings)
+        self._index = index
