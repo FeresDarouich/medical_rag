@@ -188,3 +188,9 @@ class VectorStore:
         )
         index.add(embeddings)
         self._index = index
+
+    def __len__(self) -> int:
+        return len(self._chunks)
+    
+    def is_empty(self) -> bool:
+        return len(self._chunks) == 0
