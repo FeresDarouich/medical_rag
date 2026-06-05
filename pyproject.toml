@@ -1,0 +1,35 @@
+[tool.poetry]
+name = "medical-rag"
+version = "0.1.0"
+description = "Template scaffold for a medical RAG project"
+readme = "README.md"
+packages = [
+  { include = "app" },
+  { include = "ingestion" },
+]
+
+[tool.poetry.dependencies]
+python = ">=3.12,<4.0"
+fastapi = ">=0.110"
+uvicorn = { version = ">=0.27", extras = ["standard"] }
+pydantic = ">=2.6"
+pydantic-settings = ">=2.2"
+python-dotenv = ">=1.0"
+
+numpy = ">=1.26"
+faiss-cpu = ">=1.8.0"
+
+# Optional ingestion helpers
+requests = ">=2.31"
+beautifulsoup4 = ">=4.12"
+pypdf = ">=4.2"
+
+[tool.poetry.group.dev.dependencies]
+pytest = ">=8.0"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[build-system]
+requires = ["poetry-core>=1.8.0"]
+build-backend = "poetry.core.masonry.api"
