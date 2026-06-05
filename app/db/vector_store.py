@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import math
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -31,8 +30,8 @@ class VectorStore:
             self._dimension = len(chunk.embedding)
         elif len(chunk.embedding) != self._dimension:
             raise ValueError(
-                f"Embedding dimention mismatch."
-                f"Expected {self._dimension}, got {len(chunk.embedding)}"
+                "Embedding dimension mismatch. "
+                f"Expected {self._dimension}, got {len(chunk.embedding)}."
             )
         self._chunks.append(chunk)
         embedding = np.array(
@@ -150,13 +149,18 @@ class VectorStore:
         if not chunks_file.exists():
             return store
         
-        raw = json.loads(
-            chunks_file.read_text(
-                encoding="utf-8"
-            )
-        )
-        store._chunks = [
+        raw = json.loads(chunks_file.read_text(encoding="utf-8"))
+        if not isinstance(raw, list):
+            raise ValueError(f"Invalid chunks.json format in {chunks_file}")
 
+        store._chunks = [
+            StoredChunk(
+                chunk_id=item["chunk_id"],
+                text=item["text"],
+                metadata=item.get("metadata", {}),
+                embedding=list(item["embedding"]),
+            )
+            for item in raw
         ]
         if store._chunks:
             store._dimension = len(store._chunks[0].embedding)

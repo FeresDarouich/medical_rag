@@ -10,7 +10,7 @@ from app.services.embedding import SimpleHashEmbedding
 def main() -> int:
     parser = argparse.ArgumentParser(description="Build vector index from processed chunks")
     parser.add_argument("--chunks", default="data/processed/chunks.txt", help="Chunks file")
-    parser.add_argument("--out", default="data/index/vector_store.json", help="Output index JSON")
+    parser.add_argument("--out", default="data/index", help="Output index directory")
     args = parser.parse_args()
 
     chunks_path = Path(args.chunks)

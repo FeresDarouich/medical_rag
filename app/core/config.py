@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     allowed_origins: list[str] = []
 
     openai_api_key: str | None = None
-    vector_store_path: str = "data/index/vector_store.json"
+    vector_store_path: str = "data/index"
 
 
 @lru_cache

@@ -19,7 +19,7 @@ pip install -r requirements.txt
 
 ```bash
 python -m ingestion.ingest --input data/raw/example.txt --output data/processed/chunks.txt
-python -m ingestion.build_index --chunks data/processed/chunks.txt --out data/index/vector_store.json
+python -m ingestion.build_index --chunks data/processed/chunks.txt --out data/index
 ```
 
 3) Run the API:
